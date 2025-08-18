@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>ECHO CHAMBER - TOXICKÝ DIGITÁLNY PRIESTOR - ARCHÍV</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        background: #000;
+        color: #fff;
+        font-family: 'VT323', monospace;
+        overflow-x: hidden;
+        position: relative;
+        min-height: 100vh;
+        line-height: 1.6;
+    }
+    
+    /* Archivný header */
+    .archive-header {
+        background: #111;
+        border-bottom: 2px solid #fff;
+        padding: 20px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .archive-title {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 1.2rem;
+        color: #fff;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+    
+    .archive-meta {
+        font-size: 0.9rem;
+        color: #ccc;
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .archive-meta span {
+        background: #222;
+        padding: 5px 10px;
+        border-radius: 15px;
+        border: 1px solid #444;
+    }
+    
+    /* Hlavný nadpis */
+    .main-title {
+        text-align: center;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 3rem;
+        font-weight: bold;
+        color: #fff;
+        padding: 40px 0;
+        letter-spacing: 4px;
+        border-bottom: 2px solid #fff;
+        margin-bottom: 30px;
+    }
+    
+    /* Feed kontajner */
+    .feed {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        position: relative;
+    }
+    
+    /* Post štýly */
+    .post {
+        background: #111;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        transition: all 0.2s ease;
+    }
+    
+    .post:hover {
+        border-color: #fff;
+        box-shadow: 0 4px 16px rgba(255,255,255,0.1);
+        transform: translateY(-2px);
+    }
+    
+    /* Archivné metadata pre každý post */
+    .archive-data {
+        background: #000;
+        border: 1px solid #333;
+        border-radius: 4px;
+        padding: 12px;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 0.7rem;
+        color: #ccc;
+        margin-bottom: 15px;
+    }
+    
+    .archive-data::before {
+        content: '📁 ARCHÍVNE METADÁTA';
+        display: block;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+    }
+    
+    .archive-data-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        font-size: 0.65rem;
+    }
+    
+    .archive-data-row.corrupted {
+        color: #999;
+        font-style: italic;
+    }
+    
+    .archive-data-row.preserved {
+        color: #ccc;
+    }
+    
+    .archive-data-row.warning {
+        color: #fff;
+        font-weight: bold;
+    }
+    
+    /* Autor */
+    .author {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #fff;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+        position: relative;
+    }
+    
+    .author::after {
+        content: '⚠️ TOXICKÝ OBSAH';
+        position: absolute;
+        right: 0;
+        top: 0;
+        font-size: 0.7rem;
+        color: #000;
+        background: #fff;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    
+    /* Timestamp */
+    .timestamp {
+        font-size: 0.8rem;
+        color: #999;
+        font-style: italic;
+    }
+    
+    /* Text */
+    .text {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: #ccc;
+    }
+    
+    .text::selection {
+        background: #fff;
+        color: #000;
+    }
+    
+    /* MÉDIÁ (adaptívne) */
+    .media {
+        width: 100%;
+    }
+    .media img {
+        display: block;
+        max-width: 100%;
+        width: 100%;
+        height: auto;               /* <<< prirodzená výška podľa obrázka */
+        border-radius: 6px;
+        border: 1px solid #333;
+        transition: all 0.2s ease;
+    }
+    .media img:hover {
+        border-color: #fff;
+        transform: scale(1.01);
+    }
+    /* Videá držia 16:9, obrázky nie */
+    .video-frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #333;
+        transition: border-color .2s ease, transform .2s ease;
+    }
+    .video-frame:hover { border-color:#fff; transform: scale(1.01); }
+    .video-frame iframe {
+        position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+    }
+    
+    /* Likes */
+    .likes {
+        font-size: 0.9rem;
+        color: #ccc;
+        margin-top: 10px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+    
+    .likes span {
+        background: #222;
+        padding: 5px 10px;
+        border-radius: 15px;
+        border: 1px solid #444;
+        transition: all 0.2s ease;
+    }
+    
+    .likes span:hover {
+        background: #333;
+        border-color: #666;
+        color: #fff;
+    }
+    
+    /* Toxický footer */
+    .toxic-footer {
+        text-align: center;
+        padding: 40px 20px;
+        margin-top: 40px;
+        border-top: 2px solid #fff;
+        color: #ccc;
+        font-size: 0.9rem;
+        background: #111;
+    }
+    
+    .toxic-footer::before {
+        content: '⚠️ VAROVANIE: Táto stránka obsahuje toxický obsah ⚠️';
+        display: block;
+        font-size: 1.2rem;
+        color: #fff;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    
+    /* Archivný status bar */
+    .archive-status {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #000;
+        border-top: 2px solid #fff;
+        padding: 10px;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 0.8rem;
+        color: #ccc;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .archive-status-left {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .archive-status-right {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .status-item.corrupted {
+        color: #999;
+        font-style: italic;
+    }
+    
+    .status-item.preserved {
+        color: #ccc;
+    }
+    
+    .status-item.warning {
+        color: #fff;
+        font-weight: bold;
+    }
+    
+    /* Responsívny dizajn */
+    @media (max-width: 768px) {
+        .main-title {
+            font-size: 2rem;
+            letter-spacing: 2px;
+        }
+        
+        .feed {
+            padding: 15px;
+        }
+        
+        .post {
+            padding: 15px;
+        }
+        
+        .archive-status {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .archive-meta {
+            gap: 15px;
+        }
+    }
+    
+    /* Kurzor */
+    body { cursor: default; }
+    .post:hover { cursor: pointer; }
+
+    /* Časová kapsula - poznámka */
+    .time-capsule {
+        max-width: 800px;
+        margin: 30px auto 0 auto;
+        background: #111;
+        border: 2px dashed #444;
+        border-radius: 8px;
+        padding: 20px;
+        color: #ccc;
+    }
+    .time-capsule h2 {
+        font-family: 'Share Tech Mono', monospace;
+        color: #fff;
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+    }
+    .time-capsule-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 20px;
+        margin-bottom: 12px;
+        font-size: 0.85rem;
+    }
+    .time-capsule-meta span {
+        background: #222;
+        border: 1px solid #444;
+        border-radius: 14px;
+        padding: 4px 10px;
+    }
+    .time-capsule-message {
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+
+    /* Mapa súvislostí (myslienková pavučina) */
+    .mindmap {
+        max-width: 1000px;
+        margin: 30px auto 40px auto;
+        background: #0b0b0b;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 20px;
+    }
+    .mindmap h2 {
+        font-family: 'Share Tech Mono', monospace;
+        color: #fff;
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+    }
+    .mindmap-svg-wrapper {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        border: 1px dashed #333;
+        border-radius: 8px;
+        background: radial-gradient(circle at 50% 50%, #0e0e0e, #090909 60%, #070707 100%);
+        overflow: hidden;
+        position: relative;
+    }
+    .mindmap svg { width: 100%; height: 100%; display: block; }
+    .link { stroke: #333; stroke-width: 1.2; opacity: 0.9; }
+    .node { fill: #151515; stroke: #666; stroke-width: 1.5; }
+    .node.center { fill: #ffffff; stroke: #ffffff; }
+    .node:hover { stroke: #ffffff; }
+    .node-label { fill: #ddd; font-family: 'Share Tech Mono', monospace; font-size: 14px; pointer-events: none; }
+    .node-label-bg { fill: #000; opacity: 0.55; rx: 4; ry: 4; }
+    .node-group { cursor: pointer; }
+    .dim { opacity: 0.2; }
+
+    /* Klastre farieb */
+    .node.mechanizmy { fill: #161a16; stroke: #3aa65c; }
+    .node.tech { fill: #16161a; stroke: #6b7cff; }
+    .node.ekonomika { fill: #1a1616; stroke: #ff6b6b; }
+    .node.riesenia { fill: #1a1816; stroke: #ffc857; }
+    .node.krizy { fill: #16181a; stroke: #56cfe1; }
+    .link.relation { stroke: #555; stroke-dasharray: 4 3; opacity: 0.7; }
+    .link.highlight { stroke: #fff; opacity: 1; }
+
+    /* Legenda */
+    .mindmap-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; color: #ccc; font-size: 0.9rem; }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .legend-swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid #444; }
+    .swatch-mechanizmy { background: #3aa65c; }
+    .swatch-tech { background: #6b7cff; }
+    .swatch-ekonomika { background: #ff6b6b; }
+    .swatch-riesenia { background: #ffc857; }
+    .swatch-krizy { background: #56cfe1; }
+
+    /* Tooltip pre uzly */
+    .mindmap-tooltip {
+        position: absolute;
+        display: none;
+        pointer-events: none;
+        background: #111;
+        color: #fff;
+        border: 1px solid #444;
+        border-radius: 6px;
+        padding: 6px 8px;
+        font-family: 'VT323', monospace;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        max-width: 260px;
+        z-index: 2;
+    }
+</style>
+</head>
+<body>
+
+<div class="archive-header">
+    <div class="archive-title">📁 DIGITÁLNY ARCHÍV TOXICKÉHO OBSAHU</div>
+    <div class="archive-meta">
+        <span>🗓️ ARCHIVOVANÉ: 2024</span>
+        <span>⚠️ STAV: KORUMPOVANÉ</span>
+        <span>🔒 PRÍSTUP: OBMEDZENÝ</span>
+        <span>📊 VEĽKOSŤ: 2.7TB</span>
+    </div>
+</div>
+
+<section class="time-capsule" id="time-capsule">
+    <h2>LOG — komplexná správa z obdobia 2023–2025</h2>
+    <div class="time-capsule-meta">
+        <span>⏱️ Zapísané: <strong id="tc-written-at">—</strong></span>
+        <span>🗓️ Časový horizont: <strong>2023–2025</strong></span>
+        <span>🏷️ Publikátor: <strong>Vox Loci — ECHO CHAMBER</strong></span>
+    </div>
+    <div class="time-capsule-message">
+        <p>
+            Tento LOG je záznam o tom, čo sa v digitálnom priestore dialo a ako to hýbalo masami. Internet sa stal
+            infraštruktúrou reality: rámcuje verejnú debatu, obchod, vzťahy aj politiku. Algoritmy zosilňujú konflikt,
+            emócie nahrádzajú fakty a viralita je menou vplyvu. V takomto prostredí sa šíri toxický obsah, ktorý
+            normalizuje nenávisť a prehlbuje spoločenské priepasti.
+        </p>
+        <p><strong>Informačný priestor:</strong> Ekosystém platformiem je fragmentovaný na bubliny. Echá posilňujú potvrdenie
+            vlastného názoru, odporúčacie systémy odmeňujú šok a konflikt. Dezinformácie a konšpirácie sa profesionalizujú,
+            využívajú mikrocieľenie a memetiku; fact-checking zlyháva na nedostatku dosahu a rýchlosti.</p>
+        <p><strong>Technológie a AI:</strong> Generatívna AI demokratizovala produkciu obsahu aj manipulácie (deepfakes, astroturfing,
+            automatizované bot-siete). Ochranné mechanizmy zaostávajú, rozpoznávanie pravosti je nákladné a nejednoznačné.
+            Kreatívne odvetvia aj informatika prešli do režimu „rýchleho prototypovania“ a recyklácie vzorov.</p>
+        <p><strong>Politika a konflikty:</strong> Online priestor synchronizuje pouličnú politiku, ale zároveň radikalizuje okraje.
+            Polarizácia je strategická – používa sa na mobilizáciu a monetizáciu. Propaganda prechádza z centrálne
+            riadených kanálov do decentralizovaných sieťových komunít.</p>
+        <p><strong>Ekonomika a práca:</strong> Pozornosť je kľúčový zdroj. Monetizácia hnevu zvyšuje dosah toxických formátov.
+            Práca s obsahom sa preklápa do „gig“ modelov, kde algoritmy určujú viditeľnosť, hodnotu aj tempo.</p>
+        <p><strong>Planéta a spoločnosť:</strong> Krízy (klíma, zdravie, vojny) sú medializované v reálnom čase, no ich prežívanie
+            je filtrované cez memy a krátke formáty. Únava zo spravodajstva vedie k cynizmu a eskapizmu, čo ďalej
+            oslabuje spoločenskú odolnosť.</p>
+        <p>
+            Tento LOG zanechávame budúcim čitateľom ako mapu rizík a mechanizmov: pochopte, ako bubliny vznikajú,
+            ako sa pestuje polarizácia, a že každé kliknutie je hlas v ekonomike pozornosti. Z týchto poznatkov sa
+            musí odvíjať aj regulácia, mediálna gramotnosť a dizajn platforiem; inak sa toxická dynamika zopakuje.
+        </p>
+    </div>
+</section>
+
+<div class="mindmap" id="mindmap">
+    <h2>Mapa súvislostí — pavučina tém a udalostí</h2>
+    <div class="mindmap-svg-wrapper">
+        <svg id="mindmap-svg" viewBox="0 0 1000 625" preserveAspectRatio="xMidYMid meet"></svg>
+        <div id="mindmap-tooltip" class="mindmap-tooltip"></div>
+    </div>
+    <div class="mindmap-legend">
+        <div class="legend-item"><span class="legend-swatch swatch-mechanizmy"></span><span>Mechanizmy</span></div>
+        <div class="legend-item"><span class="legend-swatch swatch-tech"></span><span>Technológie/AI</span></div>
+        <div class="legend-item"><span class="legend-swatch swatch-ekonomika"></span><span>Ekonomika</span></div>
+        <div class="legend-item"><span class="legend-swatch swatch-riesenia"></span><span>Riešenia</span></div>
+        <div class="legend-item"><span class="legend-swatch swatch-krizy"></span><span>Krízy/Konflikty</span></div>
+    </div>
+</div>
+
+<div class="toxic-footer">
+    <p>⚠️ VAROVANIE: Táto stránka je umelé dielo, ktoré má upozorniť na toxickú povahu digitálneho priestoru ⚠️</p>
+    <p>ECHO CHAMBER - priestor, kde sa šíri nenávisť, dezinformácie a radikalizácia</p>
+    <p>📁 ARCHIVOVANÉ V DIGITÁLNEJ ČASOVEJ KAPSULE - © 2024 TOXICKÝ DIGITÁLNY PRIESTOR</p>
+</div>
+
+ 
+
+<script>
+    (function() {
+        try {
+            var el = document.getElementById('tc-written-at');
+            if (el) {
+                var now = new Date();
+                var pad = function(n) { return String(n).padStart(2, '0'); };
+                var formatted = pad(now.getDate()) + '. ' + pad(now.getMonth() + 1) + '. ' + now.getFullYear() + ' '
+                    + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+                var tzMin = -now.getTimezoneOffset();
+                var sign = tzMin >= 0 ? '+' : '-';
+                var tzAbs = Math.abs(tzMin);
+                var tzH = Math.floor(tzAbs / 60);
+                var tzM = tzAbs % 60;
+                var tzStr = 'UTC' + sign + tzH + (tzM ? ':' + pad(tzM) : '');
+                el.textContent = formatted + ' (' + tzStr + ')';
+            }
+        } catch (e) {}
+    })();
+</script>
+
+<script>
+    (function() {
+        var svg = document.getElementById('mindmap-svg');
+        if (!svg) return;
+
+        function make(tag, attrs) {
+            var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+            for (var k in attrs) el.setAttribute(k, attrs[k]);
+            return el;
+        }
+
+        function render() {
+            while (svg.firstChild) svg.removeChild(svg.firstChild);
+            var vb = svg.viewBox.baseVal;
+            var width = vb ? vb.width : 1000;
+            var height = vb ? vb.height : 625;
+            var cx = width / 2, cy = height / 2;
+
+            var layers = 4; // viac prstencov
+            var spokes = 12; // viac smerov
+
+            // Pavučina (radiálne a kruhové čiary)
+            for (var i = 0; i < spokes; i++) {
+                var angle = (i / spokes) * Math.PI * 2;
+                var x = cx + Math.cos(angle) * (Math.min(width, height) * 0.45);
+                var y = cy + Math.sin(angle) * (Math.min(width, height) * 0.45);
+                svg.appendChild(make('line', { x1: cx, y1: cy, x2: x, y2: y, class: 'link' }));
+            }
+            for (var r = 1; r <= layers; r++) {
+                var radius = (Math.min(width, height) * 0.15) * r + 20;
+                svg.appendChild(make('circle', { cx: cx, cy: cy, r: radius, class: 'link', fill: 'none' }));
+            }
+
+            // Uzly (centrálny a tematické okruhy) — rozšírené a s popisom
+            var topics = [
+                // mechanizmy
+                { label: 'Algoritmy', ring: 1, pos: 0, cls: 'mechanizmy', desc: 'Triedia a zosilňujú obsah podľa pravdepodobnosti reakcie.' },
+                { label: 'Polarizácia', ring: 1, pos: 2, cls: 'mechanizmy', desc: 'Zvyšovanie napätia medzi názorovými skupinami.' },
+                { label: 'Dezinformácie', ring: 1, pos: 4, cls: 'mechanizmy', desc: 'Zavádzajúce tvrdenia šírené pre zisk a vplyv.' },
+                { label: 'Memetika', ring: 2, pos: 1, cls: 'mechanizmy', desc: 'Prenos ideí cez memy — rýchlosť, humor, šok.' },
+                { label: 'Echa/Bubliny', ring: 2, pos: 11, cls: 'mechanizmy', desc: 'Uzavreté komunity s posilňovaním vlastného názoru.' },
+                // technológie
+                { label: 'AI/Deepfakes', ring: 1, pos: 6, cls: 'tech', desc: 'Generované médiá na manipuláciu vnímania.' },
+                { label: 'Bot siete', ring: 2, pos: 3, cls: 'tech', desc: 'Automatizované účty simulujúce masu.' },
+                { label: 'Astroturfing', ring: 2, pos: 5, cls: 'tech', desc: 'Umelá „grassroots“ kampaň maskujúca pôvod.' },
+                { label: 'Doporučovacie systémy', ring: 2, pos: 7, cls: 'tech', desc: 'Modely, ktoré optimalizujú angažovanosť.' },
+                // ekonomika
+                { label: 'Ekonomika pozornosti', ring: 1, pos: 8, cls: 'ekonomika', desc: 'Pozornosť ako výmenná hodnota.' },
+                { label: 'Monetizácia hnevu', ring: 2, pos: 9, cls: 'ekonomika', desc: 'Hnev zvyšuje dosah a príjmy.' },
+                { label: 'Gig model obsahu', ring: 3, pos: 10, cls: 'ekonomika', desc: 'Prekarizovaná tvorba závislá od viditeľnosti.' },
+                // riešenia
+                { label: 'Regulácia', ring: 3, pos: 0, cls: 'riesenia', desc: 'Pravidlá pre transparentnosť a bezpečnosť.' },
+                { label: 'Mediálna gramotnosť', ring: 3, pos: 2, cls: 'riesenia', desc: 'Schopnosť čítať a hodnotiť informácie.' },
+                { label: 'Dizajn platforiem', ring: 3, pos: 4, cls: 'riesenia', desc: 'Etické UX a miernenie rizikových stimulov.' },
+                // krízy
+                { label: 'Vojny/krízy', ring: 3, pos: 6, cls: 'krizy', desc: 'Konflikty a výnimočné stavy ako katalyzátory.' },
+                { label: 'Klíma', ring: 3, pos: 8, cls: 'krizy', desc: 'Klimatická úzkosť a informačný šum.' },
+                { label: 'Zdravie', ring: 3, pos: 1, cls: 'krizy', desc: 'Pandémie a infodémia.' }
+            ];
+
+            // voliteľné dodatočné relácie (linkovanie medzi témami)
+            var relations = [
+                ['Algoritmy', 'Doporučovacie systémy'],
+                ['Algoritmy', 'Ekonomika pozornosti'],
+                ['Polarizácia', 'Monetizácia hnevu'],
+                ['Dezinformácie', 'Mediálna gramotnosť'],
+                ['AI/Deepfakes', 'Regulácia'],
+                ['Bot siete', 'Astroturfing'],
+                ['Ekonomika pozornosti', 'Gig model obsahu'],
+                ['Vojny/krízy', 'Dezinformácie'],
+                ['Klíma', 'Polarizácia'],
+                ['Zdravie', 'Dezinformácie']
+            ];
+
+            // Centrálna uzlová bodka
+            svg.appendChild(make('circle', { cx: cx, cy: cy, r: 8, class: 'node center' }));
+            var centerLabel = make('text', { x: cx + 12, y: cy + 4, class: 'node-label' });
+            centerLabel.textContent = 'ECHO CHAMBER';
+            svg.appendChild(centerLabel);
+
+            // Vykresli témy
+            var nodePositions = {};
+            topics.forEach(function(t) {
+                var angle = (t.pos / spokes) * Math.PI * 2;
+                var radius = (Math.min(width, height) * 0.15) * t.ring + 40;
+                var x = cx + Math.cos(angle) * radius;
+                var y = cy + Math.sin(angle) * radius;
+
+                // spojnice k centru
+                svg.appendChild(make('line', { x1: cx, y1: cy, x2: x, y2: y, class: 'link' }));
+                var g = make('g', { class: 'node-group', 'data-label': t.label });
+                var node = make('circle', { cx: x, cy: y, r: 10, class: 'node ' + (t.cls || '') });
+                g.appendChild(node);
+                var tx = x + 12, ty = y + 4;
+                // dočasné meranie veľkosti textu
+                var temp = make('text', { x: -9999, y: -9999, class: 'node-label' });
+                temp.textContent = t.label;
+                svg.appendChild(temp);
+                var bb = temp.getBBox();
+                svg.removeChild(temp);
+                var bg = make('rect', { x: tx - 4, y: ty - bb.height + 2, width: bb.width + 8, height: bb.height + 2, class: 'node-label-bg' });
+                var label = make('text', { x: tx, y: ty, class: 'node-label' });
+                label.textContent = t.label;
+                g.appendChild(bg);
+                g.appendChild(label);
+                svg.appendChild(g);
+                nodePositions[t.label] = { x: x, y: y, cls: t.cls, desc: t.desc };
+            });
+
+            // Dodatočné vzťahové linky — zakrivené a vážené
+            var relationEls = [];
+            relations.forEach(function(pair) {
+                var a = nodePositions[pair[0]];
+                var b = nodePositions[pair[1]];
+                var w = pair[2] || 0.6;
+                if (!a || !b) return;
+                var mx = (a.x + b.x) / 2 + (b.y - a.y) * 0.08;
+                var my = (a.y + b.y) / 2 + (a.x - b.x) * 0.08;
+                var path = make('path', {
+                    d: 'M ' + a.x + ' ' + a.y + ' Q ' + mx + ' ' + my + ' ' + b.x + ' ' + b.y,
+                    class: 'link relation',
+                    'stroke-width': String(1 + w * 2)
+                });
+                svg.appendChild(path);
+                path.__relData = { a: pair[0], b: pair[1], w: w };
+                relationEls.push(path);
+            });
+            // Interakcie: hover highlight + tooltip
+            var tooltip = document.getElementById('mindmap-tooltip');
+            var groups = svg.querySelectorAll('.node-group');
+            // používame relationEls zhora, ktoré už obsahuje meta údaje
+
+            function setDimmed(dim) {
+                var all = svg.querySelectorAll('.node-group, .link');
+                for (var i = 0; i < all.length; i++) {
+                    if (dim) all[i].classList.add('dim'); else all[i].classList.remove('dim');
+                }
+            }
+            function highlightRelations(label) {
+                for (var i = 0; i < relationEls.length; i++) {
+                    var el = relationEls[i];
+                    var d = el.__relData;
+                    if (!d) continue;
+                    if (d.a === label || d.b === label) el.classList.add('highlight'); else el.classList.remove('highlight');
+                }
+            }
+            
+
+            for (var i = 0; i < groups.length; i++) {
+                (function(g){
+                    var label = g.getAttribute('data-label');
+                    var meta = nodePositions[label] || {};
+                    g.addEventListener('mouseenter', function() {
+                        setDimmed(true);
+                        g.classList.remove('dim');
+                        highlightRelations(label);
+                        if (tooltip) {
+                            tooltip.textContent = label + (meta.desc ? ' — ' + meta.desc : '');
+                            tooltip.style.display = 'block';
+                        }
+                    });
+                    g.addEventListener('mousemove', function(e) {
+                        if (!tooltip) return;
+                        var wrapper = svg.parentElement.getBoundingClientRect();
+                        tooltip.style.left = (e.clientX - wrapper.left + 12) + 'px';
+                        tooltip.style.top = (e.clientY - wrapper.top + 12) + 'px';
+                    });
+                    g.addEventListener('mouseleave', function() {
+                        setDimmed(false);
+                        highlightRelations('');
+                        if (tooltip) tooltip.style.display = 'none';
+                    });
+                })(groups[i]);
+            }
+        }
+
+        render();
+        window.addEventListener('resize', render);
+    })();
+</script>
+<div class="archive-status">
+    <div class="archive-status-left">
+        <div class="status-item preserved">
+            <span>📁</span>
+            <span>ARCHÍV AKTÍVNY</span>
+        </div>
+        <div class="status-item warning">
+            <span>⚠️</span>
+            <span>6 TOXICKÝCH ZÁZNAMOV</span>
+        </div>
+        <div class="status-item corrupted">
+            <span>💾</span>
+            <span>3 KORUMPOVANÉ SÚBORY</span>
+        </div>
+    </div>
+    <div class="archive-status-right">
+        <div class="status-item preserved">
+            <span>🔒</span>
+            <span>PRÍSTUP OBMEDZENÝ</span>
+        </div>
+        <div class="status-item warning">
+            <span>⏰</span>
+            <span>POSLEDNÁ AKTUALIZÁCIA: TERAZ</span>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
